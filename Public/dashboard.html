@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="nav"></div>
+
+<script>
+  fetch("nav.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("nav").innerHTML = html;
+    });
+</script>
+  <h2>Dashboard</h2>
+
+  <div class="card">
+    <h3>Total Income</h3>
+    <p id="totalIncome">Loading...</p>
+  </div>
+
+  <div class="card">
+    <h3>Total Expense</h3>
+    <p id="totalExpense">Loading...</p>
+  </div>
+
+  <h3>Monthly Summary</h3>
+
+  <table id="summaryTable">
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th>Total Income</th>
+        <th>Total Expense</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // TOTAL INCOME
+    fetch("/summary/total-income")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("totalIncome").innerText =
+          data.totalIncome || 0;
+      });
+
+    // TOTAL EXPENSE
+    fetch("/summary/total-expense")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("totalExpense").innerText =
+          data.totalExpense || 0;
+      });
+
+    // MONTHLY SUMMARY
+    Promise.all([
+      fetch("/summary/monthly-income").then(res => res.json()),
+      fetch("/summary/monthly-expense").then(res => res.json())
+    ]).then(([incomeData, expenseData]) => {
+
+      const summary = {};
+
+      incomeData.forEach(i => {
+        summary[i.month] = { income: i.totalIncome, expense: 0 };
+      });
+
+      expenseData.forEach(e => {
+        if (!summary[e.month]) {
+          summary[e.month] = { income: 0, expense: e.totalExpense };
+        } else {
+          summary[e.month].expense = e.totalExpense;
+        }
+      });
+
+      const tbody = document.querySelector("#summaryTable tbody");
+
+      Object.keys(summary).sort().forEach(month => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${month}</td>
+          <td>${summary[month].income}</td>
+          <td>${summary[month].expense}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    });
+  </script>
+
+</body>
+</html>

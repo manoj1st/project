@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Expense</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="nav"></div>
+
+<script>
+  fetch("nav.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("nav").innerHTML = html;
+    });
+</script>
+
+
+<h2>Add Expense</h2>
+
+<form id="expenseForm">
+  <input type="date" name="date" required>
+  <input type="text" name="category" placeholder="Category" required>
+  <input type="number" name="amount" placeholder="Amount" required>
+  <input type="text" name="note" placeholder="Note">
+  <button type="submit">Save Expense</button>
+</form>
+
+<hr>
+
+<h3>Expense List</h3>
+
+<label>Filter by Month:</label>
+<input type="month" id="monthFilter">
+<button onclick="loadExpenses()">Apply</button>
+
+<table id="expenseTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Category</th>
+      <th>Amount</th>
+      <th>Note</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+/* SAVE EXPENSE */
+document.getElementById("expenseForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+
+  fetch("/expense", {
+    method: "POST",
+    body: new URLSearchParams(formData)
+  })
+  .then(res => res.text())
+  .then(() => {
+    this.reset();
+    loadExpenses();
+  });
+});
+
+/* LOAD EXPENSES */
+function loadExpenses() {
+  const month = document.getElementById("monthFilter").value;
+  let url = "/expense";
+
+  if (month) {
+    url += "?month=" + month;
+  }
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.querySelector("#expenseTable tbody");
+      tbody.innerHTML = "";
+
+      data.forEach(e => {
+        const row = `
+          <tr>
+            <td>${e.date}</td>
+            <td>${e.category}</td>
+            <td>${e.amount}</td>
+            <td>${e.note || ""}</td>
+          </tr>`;
+        tbody.innerHTML += row;
+      });
+    });
+}
+
+/* AUTO LOAD CURRENT MONTH */
+window.onload = () => {
+  const currentMonth = new Date().toISOString().slice(0,7);
+  document.getElementById("monthFilter").value = currentMonth;
+  loadExpenses();
+};
+</script>
+
+</body>
+</html>

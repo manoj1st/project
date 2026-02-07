@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Income Entry</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="nav"></div>
+
+<script>
+  fetch("nav.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("nav").innerHTML = html;
+    });
+</script>
+
+  <h2>Add Income</h2>
+
+  <form action="/income/save" method="POST">
+    <input type="date" name="date" required />
+
+    <input type="text" name="source" placeholder="Source (Salary, Rent, etc)" required />
+
+    <input type="number" name="amount" placeholder="Amount" required />
+
+    <textarea name="description" placeholder="Description"></textarea>
+
+    <button type="submit">Save Income</button>
+  </form>
+
+  <label for="monthFilter">Filter by Month:</label>
+<input type="month" id="monthFilter" name="monthFilter" />
+<button id="clearFilter">Clear Filter</button>
+
+
+<h3>Income List</h3>
+
+<table border="1" cellpadding="8" id="incomeTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Source</th>
+      <th>Amount</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+<script>
+  let allIncome = [];
+
+  const tbody = document.querySelector("#incomeTable tbody");
+  const monthFilter = document.getElementById("monthFilter");
+  const clearFilter = document.getElementById("clearFilter");
+
+  function renderTable(data) {
+    tbody.innerHTML = "";
+    data.forEach(income => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${income.date}</td>
+        <td>${income.source}</td>
+        <td>${income.amount}</td>
+        <td>${income.description || ""}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  // Fetch income data on page load
+  fetch("/income")
+    .then(response => response.json())
+    .then(data => {
+      allIncome = data;
+      renderTable(allIncome);
+    });
+
+  // Filter function based on selected month
+  monthFilter.addEventListener("change", () => {
+    const selectedMonth = monthFilter.value; // format: YYYY-MM
+
+    if (!selectedMonth) {
+      renderTable(allIncome);
+      return;
+    }
+
+    // Filter income by month
+    const filtered = allIncome.filter(income => {
+      return income.date.startsWith(selectedMonth);
+    });
+
+    renderTable(filtered);
+  });
+
+  // Clear filter button
+  clearFilter.addEventListener("click", () => {
+    monthFilter.value = "";
+    renderTable(allIncome);
+  });
+</script>
+
+
+
+</body>
+</html>

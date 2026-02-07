@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Customer Registration</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="nav"></div>
+
+<script>
+  fetch("nav.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("nav").innerHTML = html;
+    });
+</script>
+
+  <h2>Customer Registration</h2>
+
+<label>Customer Name:</label><br>
+  <form action="/save" method="POST">
+    <input type="text" name="name" placeholder="Customer Name" required /><br>
+
+<label>Date of Joining:</label><br>
+<input type="date" name="joining_date" required /><br>
+
+<label>Security Deposit:</label><br>
+
+<select name="security_deposit" id="security_deposit" onchange="toggleDeposit()">
+  <option value="">-- Select --</option>
+  <option value="Yes">Yes</option>
+  <option value="No">No</option>
+</select><br><br>
+
+<input 
+  type="number" 
+  id="deposit_amount"
+  name="security_deposit_amount"
+  placeholder="Security Deposit"
+  style="display: none;"
+/>
+
+<script>
+  function toggleDeposit() {
+    const select = document.getElementById("security_deposit");
+    const amountInput = document.getElementById("deposit_amount");
+
+    if (select.value === "Yes") {
+      amountInput.style.display = "block";
+      amountInput.required = true;
+    } else {
+      amountInput.style.display = "none";
+      amountInput.required = false;
+      amountInput.value = "";
+    }
+  }
+</script>
+
+
+<label>Food:</label><br>
+<select name="food">
+  <option value="Yes">Yes</option>
+  <option value="No">No</option>
+</select><br>
+
+<input type="number" name="registration_fee" placeholder="Registration Fee" required /><br>
+
+<button type="submit">Save Customer</button>
+
+
+  </form>
+
+  <h3>Customer List</h3>
+
+  <table id="customerTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Joining Date</th>
+        <th>Security Deposit</th>
+	<th>Security Deposit Amount</th>
+        <th>Food</th>
+        <th>Registration Fee</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    fetch("/customers")
+      .then(response => response.json())
+      .then(data => {
+        const tbody = document.querySelector("#customerTable tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(customer => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td data-label="Name">${customer.name}</td>
+            <td data-label="Joining Date">${customer.joining_date}</td>
+            <td data-label="Security Deposit">${customer.security_deposit}</td>
+            <td data-label="Security Deposit Amount">${customer.security_deposit_amount}</td>
+            <td data-label="Food">${customer.food}</td>
+            <td data-label="Registration Fee">${customer.registration_fee}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<html>
+<head>
+  <title>Customer Fee Payment</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+
+<div id="nav"></div>
+
+<script>
+  fetch("nav.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("nav").innerHTML = html;
+    });
+</script>
+
+
+
+<h2>Customer Monthly Fee Payment</h2>
+
+<form action="/fee-payment" method="POST">
+
+  <label>Customer:</label><br>
+  <select name="customer_id" id="customerSelect" required>
+    <option value="">Select Customer</option>
+  </select><br><br>
+
+  <label>Month:</label><br>
+  <input type="month" name="month" required /><br><br>
+
+  <label>Fee Amount:</label><br>
+  <input type="number" name="amount" required /><br><br>
+
+  <button type="submit">Save Payment</button>
+
+</form>
+
+<script>
+  fetch("/customers")
+    .then(res => res.json())
+    .then(data => {
+      const select = document.getElementById("customerSelect");
+      data.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+      });
+    });
+</script>
+
+</body>
+</html>
